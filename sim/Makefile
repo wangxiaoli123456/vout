@@ -22,7 +22,7 @@ compile_cov:
 	vcs ${CM} ${CM_NAME} ${CM_DIR} +v2k -debug_all -kdb -lca -f fileList -l compile.log
 
 simulate:
-	./simv -gui = verdi -l simulate.log
+	./simv -gui=verdi -l simulate.log
 
 simulate_cov:
 	./simv ${CM} ${CM_NAME} ${CM_DIR} -l simulate.log
