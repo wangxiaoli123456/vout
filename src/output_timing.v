@@ -57,7 +57,7 @@ always @(posedge clk)begin
   if(!rst_n)
       h_cnt_r <= {(HACTIVE_WIDTH+1){1'b0}}+1'b1;
   else
-      h_cnt_r <= (h_cnt_r<htt_c)?h_cnt_nxt_c:(HACTIVE_WIDTH+1'b1)'b1;
+      h_cnt_r <= (h_cnt_r<htt_c)?h_cnt_nxt_c:{{(HACTIVE_WIDTH){1'b0}},1'b1};
 end
 
 //h_sync
@@ -98,7 +98,7 @@ wire [VFP_WIDTH:0]      vbp_end_c;
 wire [VFP_WIDTH:0]      vfp_end_c;
 
 assign new_frame_c =( h_cnt_r == htt_c -1'b1) ? 1'b1:1'b0;
-assign v_cnt_nxt_c =(new_frame_c)?(v_cnt_r+1'b1):(VACTIVE_WIDTH+1'b1)'b0;
+assign v_cnt_nxt_c =(new_frame_c)?(v_cnt_r+1'b1):{{(VACTIVE_WIDTH){1'b0}},{1'b1}};
 
 
 assign vfp_end_c = vfp_i;
@@ -112,7 +112,7 @@ always @ (posedge clk) begin
     v_cnt_r <= {(VACTIVE_WIDTH+1){1'b0}}+1'b1;
     end
   else
-      v_cnt_r <= (v_cnt_r < vtt_c)?v_cnt_nxt_c:(VACTIVE_WIDTH+1'b1)'b1;
+      v_cnt_r <= (v_cnt_r < vtt_c)?v_cnt_nxt_c:{{(VACTIVE_WIDTH){1'b0}},{1'b1}};
   end
 
 always @(posedge clk) begin

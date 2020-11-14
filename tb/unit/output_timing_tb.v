@@ -1,6 +1,6 @@
-'timescale 1ns/100ps
+//'timescale 1ns/100ps
 
-'define PIXEL_PERIOD 8
+//'define PIXEL_PERIOD 8
 
 module output_timing_tb();
 
@@ -16,7 +16,7 @@ reg [7:0] vfp_i,vbp_i,hfp_i,hbp_i;
 reg [3:0] vsw_i,hsw_i;
 reg [15:0] v_active_i,h_active_i;
 
-always #('PIXEL_PERIOD/2)
+always #(8/2)
     pixel_clk = ~pixel_clk;
 
 output_timing sync_gen(
@@ -26,7 +26,7 @@ output_timing sync_gen(
    .datar_o(datar_o),
    .datag_o(datag_o),
    .datab_o(datab_o),
-   .clk(clk),
+   .clk(pixel_clk),
    .rst_n(rst_n),
    .sync_en(output_timing_en),
    .hpol_i(hpol_i),
@@ -43,7 +43,7 @@ output_timing sync_gen(
    .hsw_i(hsw_i));
 
 initial begin
-clk=1'b0;
+//clk=1'b0;
 rst_n=1'b0;
 output_timing_en=1'b1;
 hpol_i=1'b0;
