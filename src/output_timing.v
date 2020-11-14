@@ -37,26 +37,27 @@ module output_timing#(
 
 reg  [HACTIVE_WIDTH:0]  h_cnt_r;
 reg                     hsync_r;
-reg                     deync_r;
+reg                     de_r;
 
+wire [HACTIVE_WIDTH:0]  h_cnt_nxt_c;
 wire [HACTIVE_WIDTH:0]  htt_c;
 wire [HFP_WIDTH:0]      hsw_end_c;
 wire [HFP_WIDTH:0]      hbp_end_c;
 wire [HFP_WIDTH:0]      hfp_end_c;
+
 
 assign hfp_end_c =  hfp_i;
 assign hsw_end_c = hfp_end_c + hsw_i;
 assign hbp_end_c = hsw_end_c + hbp_i;
 assign htt_c =  hbp_end_c + hactive_i ;
 
+assign h_cnt_nxt_c = (sync_en)?(h_cnt_r+1'b1):1'b0;
 //h_cnt
 always @(posedge clk)begin
   if(!rst_n)
       h_cnt_r <= {(HACTIVE_WIDTH+1){1'b0}}+1'b1;
-  else if(sync_en)
-      h_cnt_r <= (h_cnt_r<htt_c)?(h_cnt_r+1'b1):{(HACTIVE_WIDTH+1){1'b0}}+1'b1;
   else
-      h_cnt_r <= {(HACTIVE_WIDTH+1){1'b0}}+1'b1;
+      h_cnt_r <= (h_cnt_r<htt_c)?h_cnt_nxt_c:(HACTIVE_WIDTH+1'b1)'b1;
 end
 
 //h_sync
@@ -64,52 +65,54 @@ always @(posedge clk)begin
   if(!rst_n)
     hsync_r <= 1'b0;
   else if(sync_en & h_cnt_r < hfp_end_c)
-      hsync_r <=1'b0;
+    hsync_r <=1'b0;
   else if(sync_en & h_cnt_r < hsw_end_c)
-      hsync_r <= 1'b1;
+    hsync_r <= 1'b1;
   else
-      hsync_r <= 1'b0;
+    hsync_r <= 1'b0;
 end
 
-//deync
+//de signal
 always @(posedge clk)begin
   if(!rst_n)
-    deync_r <= 1'b0;
+    de_r <= 1'b0;
   else if(sync_en & h_cnt_r < hbp_end_c )
-    deync_r <= 1'b0;
+    de_r <= 1'b0;
   else if(sync_en & h_cnt_r < htt_c)
-    deync_r <= 1'b1;
+    de_r <= 1'b1;
   else
-    deync_r <= 1'b0;
+    de_r <= 1'b0;
 end
 
 assign hsync_o = hsync_r;
-assign de_o=deync_r;
+assign de_o=de_r;
 
 reg  [VACTIVE_WIDTH:0]  v_cnt_r;
+wire [VACTIVE_WIDTH:0]  v_cnt_nxt_c;
 reg                     vsync_r;
-wire                    v_en;
+wire                    new_frame_c;
 
 wire [VACTIVE_WIDTH:0]  vtt_c;
 wire [VFP_WIDTH:0]      vsw_end_c;
 wire [VFP_WIDTH:0]      vbp_end_c;
 wire [VFP_WIDTH:0]      vfp_end_c;
 
-assign v_en =( h_cnt_r == htt_c -1'b1) ? 1'b1:1'b0;
+assign new_frame_c =( h_cnt_r == htt_c -1'b1) ? 1'b1:1'b0;
+assign v_cnt_nxt_c =(new_frame_c)?(v_cnt_r+1'b1):(VACTIVE_WIDTH+1'b1)'b0;
+
 
 assign vfp_end_c = vfp_i;
 assign vsw_end_c = vfp_end_c + vsw_i;
 assign vbp_end_c = vsw_end_c + vbp_i;
 assign vtt_c =  vbp_end_c + vactive_i ;
 
+//vcnt
 always @ (posedge clk) begin
   if(!rst_n) begin
     v_cnt_r <= {(VACTIVE_WIDTH+1){1'b0}}+1'b1;
     end
-  else if(v_cnt_r < vtt_c)
-      v_cnt_r <=v_en?(v_cnt_r+1'b1):v_cnt_r;
   else
-      v_cnt_r <={(VACTIVE_WIDTH+1) {1'b0}}+1'b1;
+      v_cnt_r <= (v_cnt_r < vtt_c)?v_cnt_nxt_c:(VACTIVE_WIDTH+1'b1)'b1;
   end
 
 always @(posedge clk) begin
