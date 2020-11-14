@@ -12,7 +12,7 @@ module output_timing#(
 )(
   input                       clk,
   input                       rst_n,
-  input                       output_timing_en,
+  input                       sync_en,
   input                       hpol_i,
   input [HFP_WIDTH-1:0]       hfp_i,
   input [HSW_WIDTH-1:0]       hsw_i,
@@ -53,7 +53,7 @@ assign htt_c =  hbp_end_c + hactive_i ;
 always @(posedge clk)begin
   if(!rst_n)
       h_cnt_r <= {(HACTIVE_WIDTH+1){1'b0}}+1'b1;
-  else if(output_timing_en)
+  else if(sync_en)
       h_cnt_r <= (h_cnt_r<htt_c)?(h_cnt_r+1'b1):{(HACTIVE_WIDTH+1){1'b0}}+1'b1;
   else
       h_cnt_r <= {(HACTIVE_WIDTH+1){1'b0}}+1'b1;
@@ -63,9 +63,9 @@ end
 always @(posedge clk)begin
   if(!rst_n)
     hsync_r <= 1'b0;
-  else if(output_timing_en & h_cnt_r < hfp_end_c)
+  else if(sync_en & h_cnt_r < hfp_end_c)
       hsync_r <=1'b0;
-  else if(output_timing_en & h_cnt_r < hsw_end_c)
+  else if(sync_en & h_cnt_r < hsw_end_c)
       hsync_r <= 1'b1;
   else
       hsync_r <= 1'b0;
@@ -75,9 +75,9 @@ end
 always @(posedge clk)begin
   if(!rst_n)
     deync_r <= 1'b0;
-  else if(output_timing_en & h_cnt_r < hbp_end_c )
+  else if(sync_en & h_cnt_r < hbp_end_c )
     deync_r <= 1'b0;
-  else if(output_timing_en & h_cnt_r < htt_c)
+  else if(sync_en & h_cnt_r < htt_c)
     deync_r <= 1'b1;
   else
     deync_r <= 1'b0;
