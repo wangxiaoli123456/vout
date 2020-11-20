@@ -89,17 +89,18 @@ assign de_o=de_r;
 
 reg  [VACTIVE_WIDTH:0]  v_cnt_r;
 wire [VACTIVE_WIDTH:0]  v_cnt_nxt_c;
+wire [VACTIVE_WIDTH:0]  v_cnt_c;
 reg                     vsync_r;
-wire                    new_frame_c;
+wire                    h_end_c;
 
 wire [VACTIVE_WIDTH:0]  vtt_c;
 wire [VFP_WIDTH:0]      vsw_end_c;
 wire [VFP_WIDTH:0]      vbp_end_c;
 wire [VFP_WIDTH:0]      vfp_end_c;
 
-assign new_frame_c =( h_cnt_r == htt_c -1'b1) ? 1'b1:1'b0;
-assign v_cnt_nxt_c =(new_frame_c)?(v_cnt_r+1'b1):{{(VACTIVE_WIDTH){1'b0}},{1'b1}};
-
+assign h_end_c =( h_cnt_r == htt_c -1'b1) ? 1'b1:1'b0;
+assign v_cnt_nxt_c =(h_end_c)?(v_cnt_r+1'b1):v_cnt_r;
+assign v_cnt_c = (v_cnt_r < vtt_c)?v_cnt_nxt_c:{{(VACTIVE_WIDTH){1'b0}},{1'b1}};
 
 assign vfp_end_c = vfp_i;
 assign vsw_end_c = vfp_end_c + vsw_i;
@@ -109,10 +110,10 @@ assign vtt_c =  vbp_end_c + vactive_i ;
 //vcnt
 always @ (posedge clk) begin
   if(!rst_n) begin
-    v_cnt_r <= {(VACTIVE_WIDTH+1){1'b0}}+1'b1;
+    v_cnt_r <= {{(VACTIVE_WIDTH){1'b0}},{1'b1}};
     end
   else
-      v_cnt_r <= (v_cnt_r < vtt_c)?v_cnt_nxt_c:{{(VACTIVE_WIDTH){1'b0}},{1'b1}};
+      v_cnt_r <= v_cnt_c;
   end
 
 always @(posedge clk) begin
