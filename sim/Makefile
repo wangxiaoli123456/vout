@@ -7,7 +7,7 @@ all_cov:clean compile_cov simulate_cov coverage
 all_cov_random:clean compile_cov simulate_cov_ran coverage
 
 find:
-	find . -name *.v > fileList
+	find . -name *.v > filelist
 
 OUTPUT = result
 SEED = $(shell date +s%)
